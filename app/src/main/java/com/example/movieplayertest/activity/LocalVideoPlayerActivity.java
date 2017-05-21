@@ -19,11 +19,11 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import com.example.movieplayertest.R;
 import com.example.movieplayertest.domain.MediaItem;
 import com.example.movieplayertest.utils.Utils;
+import com.example.movieplayertest.view.VideoView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;

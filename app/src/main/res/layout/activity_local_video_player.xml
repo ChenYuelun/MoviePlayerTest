@@ -7,7 +7,7 @@
     android:background="#000000"
     tools:context="com.example.movieplayertest.activity.LocalVideoPlayerActivity">
 
-    <VideoView
+    <com.example.movieplayertest.view.VideoView
         android:layout_centerInParent="true"
         android:id="@+id/vv"
         android:layout_width="match_parent"

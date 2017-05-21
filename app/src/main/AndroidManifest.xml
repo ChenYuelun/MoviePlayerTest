@@ -23,6 +23,7 @@
             android:launchMode="singleTask" />
         <activity android:name=".activity.LocalVideoPlayerActivity"
             android:theme="@style/MyPlayerScreen"
+            android:screenOrientation="landscape"
             ></activity>
     </application>
 
