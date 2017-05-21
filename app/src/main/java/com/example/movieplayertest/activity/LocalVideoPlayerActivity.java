@@ -11,6 +11,8 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -58,6 +60,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private Utils utils;
     private MyBroadCastReceiver receiver;
 
+    private GestureDetector detector;
+
 
     /**
      * Find the Views in the layout<br />
@@ -84,6 +88,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         btnStartPause = (Button) findViewById(R.id.btn_start_pause);
         btnNext = (Button) findViewById(R.id.btn_next);
         btnSwitchScreen = (Button) findViewById(R.id.btn_switch_screen);
+
 
         btnVoice.setOnClickListener(this);
         btnSwitchPlayer.setOnClickListener(this);
@@ -114,13 +119,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
             // Handle clicks for btnPre
         } else if (v == btnStartPause) {
-            if (vv.isPlaying()) {
-                vv.pause();
-                btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
-            } else {
-                vv.start();
-                btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
-            }
+            playOrPauseVideo();
             // Handle clicks for btnStartPause
         } else if (v == btnNext) {
             playNextVideo();
@@ -129,6 +128,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             // Handle clicks for btnSwitchScreen
         }
     }
+
+
 
 
     @Override
@@ -145,15 +146,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
     }
 
-    private void initData() {
-        utils = new Utils();
-        //注册监听电量信息的广播
-        receiver = new MyBroadCastReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        registerReceiver(receiver,filter);
 
-    }
 
 
 
@@ -198,6 +191,42 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         position = getIntent().getIntExtra("position", 0);
 
     }
+
+    private void initData() {
+        utils = new Utils();
+        //注册监听电量信息的广播
+        receiver = new MyBroadCastReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        registerReceiver(receiver,filter);
+
+        detector = new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+
+                return super.onSingleTapConfirmed(e);
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                return super.onDoubleTap(e);
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+                playOrPauseVideo();
+                super.onLongPress(e);
+            }
+        });
+
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        detector.onTouchEvent(event);
+        return super.onTouchEvent(event);
+    }
+
 
 
     //设置监听事件
@@ -334,6 +363,15 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             ivBattery.setImageResource(R.drawable.ic_battery_100);
         }else {
             ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }
+    }
+    private void playOrPauseVideo() {
+        if (vv.isPlaying()) {
+            vv.pause();
+            btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+        } else {
+            vv.start();
+            btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
         }
     }
 
