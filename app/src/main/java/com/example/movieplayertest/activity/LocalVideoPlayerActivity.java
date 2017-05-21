@@ -15,6 +15,7 @@ import android.widget.VideoView;
 
 import com.example.movieplayertest.R;
 import com.example.movieplayertest.domain.MediaItem;
+import com.example.movieplayertest.utils.Utils;
 
 import java.util.ArrayList;
 
@@ -39,6 +40,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private Button btnStartPause;
     private Button btnNext;
     private Button btnSwitchScreen;
+    private int duration;
+    private Utils utils;
 
     /**
      * Find the Views in the layout<br />
@@ -48,31 +51,31 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
      */
     private void findViews() {
         setContentView(R.layout.activity_local_video_player);
-        vv = (VideoView)findViewById(R.id.vv);
-        llTop = (LinearLayout)findViewById( R.id.ll_top );
-        tvName = (TextView)findViewById( R.id.tv_name );
-        ivBattery = (ImageView)findViewById( R.id.iv_battery );
-        tvSystemTime = (TextView)findViewById( R.id.tv_system_time );
-        btnVoice = (Button)findViewById( R.id.btn_voice );
-        seekbarVoice = (SeekBar)findViewById( R.id.seekbar_voice );
-        btnSwitchPlayer = (Button)findViewById( R.id.btn_switch_player );
-        llBottom = (LinearLayout)findViewById( R.id.ll_bottom );
-        tvCurrentTime = (TextView)findViewById( R.id.tv_current_time );
-        seekbarVideo = (SeekBar)findViewById( R.id.seekbar_video );
-        tvDuration = (TextView)findViewById( R.id.tv_duration );
-        btnExit = (Button)findViewById( R.id.btn_exit );
-        btnPre = (Button)findViewById( R.id.btn_pre );
-        btnStartPause = (Button)findViewById( R.id.btn_start_pause );
-        btnNext = (Button)findViewById( R.id.btn_next );
-        btnSwitchScreen = (Button)findViewById( R.id.btn_switch_screen );
+        vv = (VideoView) findViewById(R.id.vv);
+        llTop = (LinearLayout) findViewById(R.id.ll_top);
+        tvName = (TextView) findViewById(R.id.tv_name);
+        ivBattery = (ImageView) findViewById(R.id.iv_battery);
+        tvSystemTime = (TextView) findViewById(R.id.tv_system_time);
+        btnVoice = (Button) findViewById(R.id.btn_voice);
+        seekbarVoice = (SeekBar) findViewById(R.id.seekbar_voice);
+        btnSwitchPlayer = (Button) findViewById(R.id.btn_switch_player);
+        llBottom = (LinearLayout) findViewById(R.id.ll_bottom);
+        tvCurrentTime = (TextView) findViewById(R.id.tv_current_time);
+        seekbarVideo = (SeekBar) findViewById(R.id.seekbar_video);
+        tvDuration = (TextView) findViewById(R.id.tv_duration);
+        btnExit = (Button) findViewById(R.id.btn_exit);
+        btnPre = (Button) findViewById(R.id.btn_pre);
+        btnStartPause = (Button) findViewById(R.id.btn_start_pause);
+        btnNext = (Button) findViewById(R.id.btn_next);
+        btnSwitchScreen = (Button) findViewById(R.id.btn_switch_screen);
 
-        btnVoice.setOnClickListener( this );
-        btnSwitchPlayer.setOnClickListener( this );
-        btnExit.setOnClickListener( this );
-        btnPre.setOnClickListener( this );
-        btnStartPause.setOnClickListener( this );
-        btnNext.setOnClickListener( this );
-        btnSwitchScreen.setOnClickListener( this );
+        btnVoice.setOnClickListener(this);
+        btnSwitchPlayer.setOnClickListener(this);
+        btnExit.setOnClickListener(this);
+        btnPre.setOnClickListener(this);
+        btnStartPause.setOnClickListener(this);
+        btnNext.setOnClickListener(this);
+        btnSwitchScreen.setOnClickListener(this);
     }
 
     /**
@@ -83,19 +86,28 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
      */
     @Override
     public void onClick(View v) {
-        if ( v == btnVoice ) {
+        if (v == btnVoice) {
             // Handle clicks for btnVoice
-        } else if ( v == btnSwitchPlayer ) {
+        } else if (v == btnSwitchPlayer) {
             // Handle clicks for btnSwitchPlayer
-        } else if ( v == btnExit ) {
+        } else if (v == btnExit) {
+            finish();
             // Handle clicks for btnExit
-        } else if ( v == btnPre ) {
+        } else if (v == btnPre) {
+
             // Handle clicks for btnPre
-        } else if ( v == btnStartPause ) {
+        } else if (v == btnStartPause) {
+            if (vv.isPlaying()) {
+                vv.pause();
+                btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+            } else {
+                vv.start();
+                btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
+            }
             // Handle clicks for btnStartPause
-        } else if ( v == btnNext ) {
+        } else if (v == btnNext) {
             // Handle clicks for btnNext
-        } else if ( v == btnSwitchScreen ) {
+        } else if (v == btnSwitchScreen) {
             // Handle clicks for btnSwitchScreen
         }
     }
@@ -107,11 +119,13 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
         findViews();
         getDatas();
+        utils = new Utils();
         setListener();
         setDatas();
 
 
     }
+
 
     private void setDatas() {
         if (mediaItems != null && mediaItems.size() > 0) {
@@ -125,6 +139,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     //获取视频数据
     private void getDatas() {
         mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videoList");
+        tvName.setText(mediaItems.get(position).getName());
         position = getIntent().getIntExtra("position", 0);
 
     }
@@ -135,6 +150,10 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         vv.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                duration = vv.getDuration();
+                seekbarVideo.setMax(duration);
+                seekbarVideo.setMax(duration);
+                tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
             }
         });
@@ -149,6 +168,25 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         vv.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
+
+            }
+        });
+
+        seekbarVideo.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    vv.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
 
             }
         });
