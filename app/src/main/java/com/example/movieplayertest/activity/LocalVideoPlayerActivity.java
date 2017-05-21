@@ -32,6 +32,7 @@ import java.util.Date;
 public class LocalVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PROGRESS = 1;
     private static final int NEWTIME = 2;
+    private static final int HIDEMEDIACONTROLLER = 3;
     private VideoView vv;
     private ArrayList<MediaItem> mediaItems;
     private int position;
@@ -55,7 +56,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private int duration;
     private Utils utils;
     private MyBroadCastReceiver receiver;
-
+    private boolean isShowMediaController = true;
     private GestureDetector detector;
 
 
@@ -162,6 +163,12 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                     tvSystemTime.setText(getSystemTime());
                     handler.sendEmptyMessageDelayed(NEWTIME, 60000);
                     break;
+
+                case HIDEMEDIACONTROLLER:
+
+                    hideOrShowMediaController();
+                    break;
+
             }
 
         }
@@ -216,17 +223,20 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         });
 
     }
-    private boolean isShowMediaController = true;
+
 
     private void hideOrShowMediaController() {
         if(isShowMediaController) {
+            handler.removeMessages(HIDEMEDIACONTROLLER);
             llBottom.setVisibility(View.GONE);
             llTop.setVisibility(View.GONE);
+
             isShowMediaController = false;
         }else {
             llBottom.setVisibility(View.VISIBLE);
             llTop.setVisibility(View.VISIBLE);
             isShowMediaController = true;
+            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
         }
     }
 
@@ -250,6 +260,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 vv.start();
                 setButtonStatus();
                 handler.sendEmptyMessage(PROGRESS);
+                hideOrShowMediaController();
 
             }
         });
