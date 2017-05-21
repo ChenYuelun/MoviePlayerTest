@@ -1,12 +1,16 @@
 package com.example.movieplayertest.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -19,11 +23,15 @@ import com.example.movieplayertest.R;
 import com.example.movieplayertest.domain.MediaItem;
 import com.example.movieplayertest.utils.Utils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static android.R.attr.process;
 
 public class LocalVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final int PROGRESS = 1;
+    private static final int NEWTIME = 2;
     private VideoView vv;
     private ArrayList<MediaItem> mediaItems;
     private int position;
@@ -46,7 +54,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private Button btnSwitchScreen;
     private int duration;
     private Utils utils;
-    private final int PROGRESS = 1;
+    private MyBroadCastReceiver receiver;
+
 
     /**
      * Find the Views in the layout<br />
@@ -124,12 +133,25 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
         findViews();
         getDatas();
-        utils = new Utils();
+        initData();
+
         setListener();
         setDatas();
 
 
     }
+
+    private void initData() {
+        utils = new Utils();
+        //注册监听电量信息的广播
+        receiver = new MyBroadCastReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        registerReceiver(receiver,filter);
+
+    }
+
+
 
     private Handler handler = new Handler(){
         @Override
@@ -142,10 +164,17 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                     sendEmptyMessageDelayed(PROGRESS,1000);
 
                     break;
+
+                case NEWTIME:
+                    tvSystemTime.setText(getSystemTime());
+                    handler.sendEmptyMessageDelayed(NEWTIME, 60000);
+                    break;
             }
 
         }
     };
+
+
 
 
     private void setDatas() {
@@ -153,6 +182,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
             MediaItem mediaItem = mediaItems.get(position);
             vv.setVideoPath(mediaItem.getData());
+            handler.sendEmptyMessage(NEWTIME);
 
         }
     }
@@ -215,5 +245,52 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         });
     }
 
+    private String getSystemTime() {
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+        return format.format(new Date());
+    }
 
+    public class MyBroadCastReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int level = intent.getIntExtra("level", 0);//主线程
+            Log.e("TAG","level=="+level);
+            setBatteryView(level);
+        }
+    }
+    private void setBatteryView(int level) {
+        if(level <=0){
+            ivBattery.setImageResource(R.drawable.ic_battery_0);
+        }else if(level <= 10){
+            ivBattery.setImageResource(R.drawable.ic_battery_10);
+        }else if(level <=20){
+            ivBattery.setImageResource(R.drawable.ic_battery_20);
+        }else if(level <=40){
+            ivBattery.setImageResource(R.drawable.ic_battery_40);
+        }else if(level <=60){
+            ivBattery.setImageResource(R.drawable.ic_battery_60);
+        }else if(level <=80){
+            ivBattery.setImageResource(R.drawable.ic_battery_80);
+        }else if(level <=100){
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }else {
+            ivBattery.setImageResource(R.drawable.ic_battery_100);
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        if(handler != null){
+            handler.removeCallbacksAndMessages(null);
+            handler = null;
+        }
+
+        if(receiver != null){
+            unregisterReceiver(receiver);
+            receiver = null;
+        }
+        super.onDestroy();
+    }
 }
