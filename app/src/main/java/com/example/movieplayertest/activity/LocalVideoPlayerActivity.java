@@ -3,6 +3,8 @@ package com.example.movieplayertest.activity;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -18,6 +20,8 @@ import com.example.movieplayertest.domain.MediaItem;
 import com.example.movieplayertest.utils.Utils;
 
 import java.util.ArrayList;
+
+import static android.R.attr.process;
 
 public class LocalVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private VideoView vv;
@@ -42,6 +46,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private Button btnSwitchScreen;
     private int duration;
     private Utils utils;
+    private final int PROGRESS = 1;
 
     /**
      * Find the Views in the layout<br />
@@ -126,6 +131,22 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
     }
 
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case PROGRESS :
+                    int currentPosition = vv.getCurrentPosition();
+                    seekbarVideo.setProgress(currentPosition);
+                    tvCurrentTime.setText(utils.stringForTime(currentPosition));
+                    sendEmptyMessageDelayed(PROGRESS,1000);
+
+                    break;
+            }
+
+        }
+    };
+
 
     private void setDatas() {
         if (mediaItems != null && mediaItems.size() > 0) {
@@ -155,6 +176,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 seekbarVideo.setMax(duration);
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
+                handler.sendEmptyMessage(PROGRESS);
+
             }
         });
 
