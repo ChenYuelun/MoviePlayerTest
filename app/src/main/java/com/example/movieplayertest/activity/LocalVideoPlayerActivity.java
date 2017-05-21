@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.example.movieplayertest.R;
@@ -27,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static android.R.attr.manageSpaceActivity;
 import static android.R.attr.process;
 
 public class LocalVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
@@ -108,6 +110,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             finish();
             // Handle clicks for btnExit
         } else if (v == btnPre) {
+            playPreVideo();
 
             // Handle clicks for btnPre
         } else if (v == btnStartPause) {
@@ -207,6 +210,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 seekbarVideo.setMax(duration);
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
+                setButtonStatus();
                 handler.sendEmptyMessage(PROGRESS);
 
             }
@@ -255,7 +259,48 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             MediaItem mediaItem = mediaItems.get(position);
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
+            setButtonStatus();
+        }else {
+            Toast.makeText(LocalVideoPlayerActivity.this, "视频列表已播放完毕", Toast.LENGTH_SHORT).show();
+            finish();
         }
+    }
+
+    private void playPreVideo() {
+        position--;
+        if(position>=0) {
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+            setButtonStatus();
+        }
+    }
+
+    private void setButtonStatus() {
+        if(mediaItems!= null && mediaItems.size() > 0) {
+            setEnable(true);
+            if(position ==0) {
+                btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+                btnPre.setEnabled(false);
+            }
+
+            if(position == mediaItems.size()-1) {
+                btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+                btnNext.setEnabled(false);
+            }
+        }
+    }
+
+    private void setEnable(boolean b) {
+        if(b) {
+            btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
+            btnNext.setBackgroundResource(R.drawable.btn_next_selector);
+        }else {
+            btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
+            btnNext.setBackgroundResource(R.drawable.btn_next_gray);
+        }
+        btnPre.setEnabled(b);
+        btnNext.setEnabled(b);
     }
 
     private String getSystemTime() {
