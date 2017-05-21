@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -29,10 +30,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static android.R.attr.width;
+
 public class LocalVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PROGRESS = 1;
     private static final int NEWTIME = 2;
     private static final int HIDEMEDIACONTROLLER = 3;
+    private static final int DEFAULT_SCREEN = 4;
+    private static final int FULL_SCREEN = 5;
     private VideoView vv;
     private ArrayList<MediaItem> mediaItems;
     private int position;
@@ -58,6 +63,13 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private MyBroadCastReceiver receiver;
     private boolean isShowMediaController = true;
     private GestureDetector detector;
+
+    private int screenWidth;
+    private int screenHeight;
+
+    private int videoWidth;
+    private int videoHeight;
+    private boolean isFullScreen = true;
 
 
     /**
@@ -123,9 +135,9 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             // Handle clicks for btnNext
         } else if (v == btnSwitchScreen) {
             // Handle clicks for btnSwitchScreen
+            setVideoScreenType();
         }
     }
-
 
 
 
@@ -200,6 +212,11 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         registerReceiver(receiver,filter);
 
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        screenHeight = metrics.heightPixels;
+        screenWidth =metrics.widthPixels;
+
         detector = new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
@@ -209,6 +226,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
             @Override
             public boolean onDoubleTap(MotionEvent e) {
+                setVideoScreenType();
                 return super.onDoubleTap(e);
             }
 
@@ -235,11 +253,14 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         vv.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
+                videoWidth = mp.getVideoWidth();
+                videoHeight = mp.getVideoHeight();
                 duration = vv.getDuration();
                 seekbarVideo.setMax(duration);
                 seekbarVideo.setMax(duration);
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
+                setVideoScreenType();
                 setButtonStatus();
                 handler.sendEmptyMessage(PROGRESS);
                 hideOrShowMediaController();
@@ -393,6 +414,45 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
         }
     }
+
+
+    private void setVideoScreenType() {
+        if(isFullScreen) {
+            setScreenType(DEFAULT_SCREEN);
+            isFullScreen =false;
+        }else {
+            setScreenType(FULL_SCREEN);
+            isFullScreen =true;
+        }
+    }
+
+    private void setScreenType(int screenTYpe) {
+        switch (screenTYpe) {
+            case  DEFAULT_SCREEN:
+                int mVideoWidth = videoWidth;
+                int mVideoHeight= videoHeight;
+                int height = screenHeight;
+                int width = screenWidth;
+
+
+                // for compatibility, we adjust size based on aspect ratio
+                if (mVideoWidth * height < width * mVideoHeight) {
+                    //Log.i("@@@", "image too wide, correcting");
+                    width = height * mVideoWidth / mVideoHeight;
+                } else if (mVideoWidth * height > width * mVideoHeight) {
+                    //Log.i("@@@", "image too tall, correcting");
+                    height = width * mVideoHeight / mVideoWidth;
+                }
+                vv.setVideoSize(width, height);
+                btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_full_selector);
+                break;
+            case  FULL_SCREEN:
+                vv.setVideoSize(screenWidth,screenHeight);
+                btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_default_selector);
+                break;
+        }
+    }
+
 
 
     @Override
