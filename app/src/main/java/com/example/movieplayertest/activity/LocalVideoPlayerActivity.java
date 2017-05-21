@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -29,9 +28,6 @@ import com.example.movieplayertest.utils.Utils;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-
-import static android.R.attr.manageSpaceActivity;
-import static android.R.attr.process;
 
 public class LocalVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
     private static final int PROGRESS = 1;
@@ -203,7 +199,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         detector = new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
-
+                hideOrShowMediaController();
                 return super.onSingleTapConfirmed(e);
             }
 
@@ -219,6 +215,19 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             }
         });
 
+    }
+    private boolean isShowMediaController = true;
+
+    private void hideOrShowMediaController() {
+        if(isShowMediaController) {
+            llBottom.setVisibility(View.GONE);
+            llTop.setVisibility(View.GONE);
+            isShowMediaController = false;
+        }else {
+            llBottom.setVisibility(View.VISIBLE);
+            llTop.setVisibility(View.VISIBLE);
+            isShowMediaController = true;
+        }
     }
 
     @Override
