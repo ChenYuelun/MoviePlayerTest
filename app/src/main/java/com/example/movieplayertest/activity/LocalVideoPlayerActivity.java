@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -259,11 +260,34 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     }
 
 
-
+    private float startY;
+    private float touchRang;
+    private int curVoice;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN :
+                startY = event.getY();
+                touchRang =Math.min(screenWidth, screenHeight);
+                curVoice = am.getStreamVolume(AudioManager.STREAM_MUSIC);
+                handler.removeMessages(HIDEMEDIACONTROLLER);
+                break;
+            case MotionEvent.ACTION_MOVE :
+                float newY = event.getY();
+                float diatanceY = startY - newY;
+                int change = (int) ((diatanceY/touchRang)*maxVoice);
+                int newVoice = Math.min(Math.max(curVoice + change,0),maxVoice);
+                if(newVoice != 0) {
+                    updataCurrentVoice(newVoice);
+                }
+                break;
+            case MotionEvent.ACTION_UP :
+                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
+                break;
+        }
         return super.onTouchEvent(event);
     }
 
@@ -505,6 +529,26 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_default_selector);
                 break;
         }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+
+        if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN){
+            currentVoice--;
+            updataCurrentVoice(currentVoice);
+            handler.removeMessages(HIDEMEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER, 5000);
+            return true;
+        }else if(keyCode ==KeyEvent.KEYCODE_VOLUME_UP){
+            currentVoice++;
+            updataCurrentVoice(currentVoice);
+            handler.removeMessages(HIDEMEDIACONTROLLER);
+            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER, 5000);
+            return true;
+        }
+
+        return super.onKeyDown(keyCode, event);
     }
 
 
