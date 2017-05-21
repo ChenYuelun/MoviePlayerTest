@@ -174,9 +174,6 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         }
     };
 
-
-
-
     private void setDatas() {
         if (mediaItems != null && mediaItems.size() > 0) {
 
@@ -225,28 +222,13 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     }
 
 
-    private void hideOrShowMediaController() {
-        if(isShowMediaController) {
-            handler.removeMessages(HIDEMEDIACONTROLLER);
-            llBottom.setVisibility(View.GONE);
-            llTop.setVisibility(View.GONE);
 
-            isShowMediaController = false;
-        }else {
-            llBottom.setVisibility(View.VISIBLE);
-            llTop.setVisibility(View.VISIBLE);
-            isShowMediaController = true;
-            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
-        }
-    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         detector.onTouchEvent(event);
         return super.onTouchEvent(event);
     }
-
-
 
     //设置监听事件
     private void setListener() {
@@ -292,12 +274,12 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                handler.removeMessages(HIDEMEDIACONTROLLER);
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-
+                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
             }
         });
     }
@@ -392,6 +374,23 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         } else {
             vv.start();
             btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
+        }
+    }
+
+
+
+    private void hideOrShowMediaController() {
+        if(isShowMediaController) {
+            handler.removeMessages(HIDEMEDIACONTROLLER);
+            llBottom.setVisibility(View.GONE);
+            llTop.setVisibility(View.GONE);
+
+            isShowMediaController = false;
+        }else {
+            llBottom.setVisibility(View.VISIBLE);
+            llTop.setVisibility(View.VISIBLE);
+            isShowMediaController = true;
+            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
         }
     }
 
