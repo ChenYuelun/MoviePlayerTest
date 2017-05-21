@@ -120,6 +120,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             }
             // Handle clicks for btnStartPause
         } else if (v == btnNext) {
+            playNextVideo();
             // Handle clicks for btnNext
         } else if (v == btnSwitchScreen) {
             // Handle clicks for btnSwitchScreen
@@ -222,6 +223,9 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             @Override
             public void onCompletion(MediaPlayer mp) {
 
+                    playNextVideo();
+
+
             }
         });
 
@@ -243,6 +247,15 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
             }
         });
+    }
+
+    private void playNextVideo() {
+        position++;
+        if(position<mediaItems.size()) {
+            MediaItem mediaItem = mediaItems.get(position);
+            vv.setVideoPath(mediaItem.getData());
+            tvName.setText(mediaItem.getName());
+        }
     }
 
     private String getSystemTime() {
