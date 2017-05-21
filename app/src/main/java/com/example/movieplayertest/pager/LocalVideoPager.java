@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.example.movieplayertest.Adapter.LocalVideoAdapter;
 import com.example.movieplayertest.R;
+import com.example.movieplayertest.activity.LocalVideoPlayerActivity;
 import com.example.movieplayertest.domain.MediaItem;
 import com.example.movieplayertest.fragment.BaseFragment;
 
@@ -40,7 +41,8 @@ public class LocalVideoPager extends BaseFragment {
         lv_local_video.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
+                //Intent intent = new Intent(Intent.ACTION_VIEW);
+                Intent intent = new Intent(context,LocalVideoPlayerActivity.class);
                 intent.setDataAndType(Uri.parse(mediaItems.get(position).getData()), "video/*");
                 startActivity(intent);
             }
