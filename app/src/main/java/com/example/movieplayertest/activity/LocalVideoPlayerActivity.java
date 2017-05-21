@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.Message;
@@ -72,6 +73,12 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private boolean isFullScreen = true;
 
 
+    private int maxVoice;
+    private int currentVoice;
+    private boolean isMute = false;
+    private AudioManager am;
+
+
     /**
      * Find the Views in the layout<br />
      * <br />
@@ -117,6 +124,15 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     @Override
     public void onClick(View v) {
         if (v == btnVoice) {
+            if(!isMute) {
+                am.setStreamVolume(AudioManager.STREAM_MUSIC,0,0);
+                seekbarVoice.setProgress(0);
+                isMute =true;
+            }else {
+                am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+                seekbarVoice.setProgress(currentVoice);
+                isMute =false;
+            }
             // Handle clicks for btnVoice
         } else if (v == btnSwitchPlayer) {
             // Handle clicks for btnSwitchPlayer
@@ -216,6 +232,9 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         screenHeight = metrics.heightPixels;
         screenWidth =metrics.widthPixels;
+        am = (AudioManager) getSystemService(AUDIO_SERVICE);
+        maxVoice =am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        currentVoice = am.getStreamVolume(AudioManager.STREAM_MUSIC);
 
         detector = new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
             @Override
@@ -257,7 +276,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 videoHeight = mp.getVideoHeight();
                 duration = vv.getDuration();
                 seekbarVideo.setMax(duration);
-                seekbarVideo.setMax(duration);
+                seekbarVoice.setMax(maxVoice);
+                seekbarVoice.setProgress(currentVoice);
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
                 setVideoScreenType();
@@ -303,6 +323,40 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
             }
         });
+
+        seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if(fromUser) {
+                    updataCurrentVoice(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                handler.removeMessages(HIDEMEDIACONTROLLER);
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
+            }
+        });
+    }
+
+    private void updataCurrentVoice(int progress) {
+
+        currentVoice =progress;
+        am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+        seekbarVoice.setProgress(currentVoice);
+
+        if(currentVoice == 0) {
+            isMute = true;
+        }else {
+            isMute = false;
+        }
+
+
     }
 
     private void playNextVideo() {
