@@ -21,7 +21,9 @@
             android:name=".MainActivity"
             android:configChanges="screenSize|orientation|keyboardHidden"
             android:launchMode="singleTask" />
-        <activity android:name=".activity.LocalVideoPlayerActivity"></activity>
+        <activity android:name=".activity.LocalVideoPlayerActivity"
+            android:theme="@style/MyPlayerScreen"
+            ></activity>
     </application>
 
 </manifest>
