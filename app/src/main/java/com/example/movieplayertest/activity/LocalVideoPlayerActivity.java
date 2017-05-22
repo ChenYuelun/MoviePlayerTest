@@ -308,6 +308,11 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 setButtonStatus();
                 handler.sendEmptyMessage(PROGRESS);
                 hideOrShowMediaController();
+                if(vv.isPlaying()){
+                    btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
+                }else {
+                    btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
+                }
 
             }
         });
