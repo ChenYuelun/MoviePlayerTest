@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static android.R.attr.cacheColorHint;
 import static android.R.attr.handle;
 import static android.R.attr.width;
 
@@ -43,6 +44,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private static final int HIDEMEDIACONTROLLER = 3;
     private static final int DEFAULT_SCREEN = 4;
     private static final int FULL_SCREEN = 5;
+    private static final int SHOW_NET_SPEED = 6;
     private VideoView vv;
     private ArrayList<MediaItem> mediaItems;
     private int position;
@@ -87,6 +89,10 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private LinearLayout ll_buffering;
     private TextView tv_net_speed;
 
+    private LinearLayout ll_loading;
+    private TextView tv_loading_net_speed;
+
+
 
     /**
      * Find the Views in the layout<br />
@@ -115,6 +121,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         btnSwitchScreen = (Button) findViewById(R.id.btn_switch_screen);
         ll_buffering = (LinearLayout)findViewById(R.id.ll_buffering);
         tv_net_speed = (TextView)findViewById(R.id.tv_net_speed);
+        ll_loading = (LinearLayout)findViewById(R.id.ll_loading);
+        tv_loading_net_speed = (TextView)findViewById(R.id.tv_loading_net_speed);
 
 
         btnVoice.setOnClickListener(this);
@@ -223,6 +231,16 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                     hideOrShowMediaController();
                     break;
 
+                case SHOW_NET_SPEED:
+                    if(isNetUri) {
+                        String speed = utils.getNetSpeed(LocalVideoPlayerActivity.this);
+                        tv_net_speed.setText(speed);
+                        tv_loading_net_speed.setText(speed);
+                        sendEmptyMessageDelayed(SHOW_NET_SPEED,1000);
+                    }
+
+                    break;
+
             }
 
         }
@@ -240,6 +258,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             isNetUri = utils.isNetUri(uri.toString());
             vv.setVideoURI(uri);
         }
+        handler.sendEmptyMessage(SHOW_NET_SPEED);
     }
 
     //获取视频数据
@@ -333,6 +352,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 seekbarVoice.setProgress(currentVoice);
                 tvDuration.setText(utils.stringForTime(duration));
                 vv.start();
+                ll_loading.setVisibility(View.GONE);
                 setVideoScreenType();
                 setButtonStatus();
                 handler.sendEmptyMessage(PROGRESS);
