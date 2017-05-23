@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -32,6 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
+import static android.R.attr.handle;
 import static android.R.attr.width;
 
 public class LocalVideoPlayerActivity extends AppCompatActivity implements View.OnClickListener {
@@ -78,6 +80,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private int currentVoice;
     private boolean isMute = false;
     private AudioManager am;
+    private Uri uri;
 
 
     /**
@@ -125,14 +128,14 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     @Override
     public void onClick(View v) {
         if (v == btnVoice) {
-            if(!isMute) {
-                am.setStreamVolume(AudioManager.STREAM_MUSIC,0,0);
+            if (!isMute) {
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, 0, 0);
                 seekbarVoice.setProgress(0);
-                isMute =true;
-            }else {
-                am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+                isMute = true;
+            } else {
+                am.setStreamVolume(AudioManager.STREAM_MUSIC, currentVoice, 0);
                 seekbarVoice.setProgress(currentVoice);
-                isMute =false;
+                isMute = false;
             }
             // Handle clicks for btnVoice
         } else if (v == btnSwitchPlayer) {
@@ -142,7 +145,6 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             // Handle clicks for btnExit
         } else if (v == btnPre) {
             playPreVideo();
-
             // Handle clicks for btnPre
         } else if (v == btnStartPause) {
             playOrPauseVideo();
@@ -155,7 +157,6 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             setVideoScreenType();
         }
     }
-
 
 
     @Override
@@ -173,18 +174,15 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     }
 
 
-
-
-
-    private Handler handler = new Handler(){
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case PROGRESS :
+                case PROGRESS:
                     int currentPosition = vv.getCurrentPosition();
                     seekbarVideo.setProgress(currentPosition);
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
-                    sendEmptyMessageDelayed(PROGRESS,1000);
+                    sendEmptyMessageDelayed(PROGRESS, 1000);
 
                     break;
 
@@ -207,16 +205,18 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         if (mediaItems != null && mediaItems.size() > 0) {
 
             MediaItem mediaItem = mediaItems.get(position);
+            tvName.setText(mediaItem.getName());
             vv.setVideoPath(mediaItem.getData());
             handler.sendEmptyMessage(NEWTIME);
-
+        }else if(uri != null) {
+            vv.setVideoURI(uri);
         }
     }
 
     //获取视频数据
     private void getDatas() {
+        uri = getIntent().getData();
         mediaItems = (ArrayList<MediaItem>) getIntent().getSerializableExtra("videoList");
-        tvName.setText(mediaItems.get(position).getName());
         position = getIntent().getIntExtra("position", 0);
 
     }
@@ -227,17 +227,17 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         receiver = new MyBroadCastReceiver();
         IntentFilter filter = new IntentFilter();
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
-        registerReceiver(receiver,filter);
+        registerReceiver(receiver, filter);
 
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
         screenHeight = metrics.heightPixels;
-        screenWidth =metrics.widthPixels;
+        screenWidth = metrics.widthPixels;
         am = (AudioManager) getSystemService(AUDIO_SERVICE);
-        maxVoice =am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        maxVoice = am.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
         currentVoice = am.getStreamVolume(AudioManager.STREAM_MUSIC);
 
-        detector = new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
+        detector = new GestureDetector(this, new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {
                 hideOrShowMediaController();
@@ -269,23 +269,23 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         detector.onTouchEvent(event);
 
         switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN :
+            case MotionEvent.ACTION_DOWN:
                 startY = event.getY();
-                touchRang =Math.min(screenWidth, screenHeight);
+                touchRang = Math.min(screenWidth, screenHeight);
                 curVoice = am.getStreamVolume(AudioManager.STREAM_MUSIC);
                 handler.removeMessages(HIDEMEDIACONTROLLER);
                 break;
-            case MotionEvent.ACTION_MOVE :
+            case MotionEvent.ACTION_MOVE:
                 float newY = event.getY();
                 float diatanceY = startY - newY;
-                int change = (int) ((diatanceY/touchRang)*maxVoice);
-                int newVoice = Math.min(Math.max(curVoice + change,0),maxVoice);
-                if(newVoice != 0) {
+                int change = (int) ((diatanceY / touchRang) * maxVoice);
+                int newVoice = Math.min(Math.max(curVoice + change, 0), maxVoice);
+                if (newVoice != 0) {
                     updataCurrentVoice(newVoice);
                 }
                 break;
-            case MotionEvent.ACTION_UP :
-                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
+            case MotionEvent.ACTION_UP:
+                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER, 5000);
                 break;
         }
         return super.onTouchEvent(event);
@@ -308,9 +308,9 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 setButtonStatus();
                 handler.sendEmptyMessage(PROGRESS);
                 hideOrShowMediaController();
-                if(vv.isPlaying()){
+                if (vv.isPlaying()) {
                     btnStartPause.setBackgroundResource(R.drawable.btn_pause_selector);
-                }else {
+                } else {
                     btnStartPause.setBackgroundResource(R.drawable.btn_start_selector);
                 }
 
@@ -328,7 +328,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             @Override
             public void onCompletion(MediaPlayer mp) {
 
-                    playNextVideo();
+                playNextVideo();
 
 
             }
@@ -349,14 +349,14 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
+                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER, 5000);
             }
         });
 
         seekbarVoice.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser) {
+                if (fromUser) {
                     updataCurrentVoice(progress);
                 }
             }
@@ -368,20 +368,20 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
+                handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER, 5000);
             }
         });
     }
 
     private void updataCurrentVoice(int progress) {
 
-        currentVoice =progress;
-        am.setStreamVolume(AudioManager.STREAM_MUSIC,currentVoice,0);
+        currentVoice = progress;
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, currentVoice, 0);
         seekbarVoice.setProgress(currentVoice);
 
-        if(currentVoice == 0) {
+        if (currentVoice == 0) {
             isMute = true;
-        }else {
+        } else {
             isMute = false;
         }
 
@@ -390,12 +390,12 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
     private void playNextVideo() {
         position++;
-        if(position<mediaItems.size()) {
+        if (position < mediaItems.size()) {
             MediaItem mediaItem = mediaItems.get(position);
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             setButtonStatus();
-        }else {
+        } else {
             Toast.makeText(LocalVideoPlayerActivity.this, "视频列表已播放完毕", Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -403,7 +403,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
     private void playPreVideo() {
         position--;
-        if(position>=0) {
+        if (position >= 0) {
             MediaItem mediaItem = mediaItems.get(position);
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
@@ -412,25 +412,27 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     }
 
     private void setButtonStatus() {
-        if(mediaItems!= null && mediaItems.size() > 0) {
+        if (mediaItems != null && mediaItems.size() > 0) {
             setEnable(true);
-            if(position ==0) {
+            if (position == 0) {
                 btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
                 btnPre.setEnabled(false);
             }
 
-            if(position == mediaItems.size()-1) {
+            if (position == mediaItems.size() - 1) {
                 btnNext.setBackgroundResource(R.drawable.btn_next_gray);
                 btnNext.setEnabled(false);
             }
+        }else if(uri != null) {
+            setEnable(false);
         }
     }
 
     private void setEnable(boolean b) {
-        if(b) {
+        if (b) {
             btnPre.setBackgroundResource(R.drawable.btn_pre_selector);
             btnNext.setBackgroundResource(R.drawable.btn_next_selector);
-        }else {
+        } else {
             btnPre.setBackgroundResource(R.drawable.btn_pre_gray);
             btnNext.setBackgroundResource(R.drawable.btn_next_gray);
         }
@@ -443,34 +445,36 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         return format.format(new Date());
     }
 
-    public class MyBroadCastReceiver extends BroadcastReceiver{
+    public class MyBroadCastReceiver extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
             int level = intent.getIntExtra("level", 0);//主线程
-            Log.e("TAG","level=="+level);
+            Log.e("TAG", "level==" + level);
             setBatteryView(level);
         }
     }
+
     private void setBatteryView(int level) {
-        if(level <=0){
+        if (level <= 0) {
             ivBattery.setImageResource(R.drawable.ic_battery_0);
-        }else if(level <= 10){
+        } else if (level <= 10) {
             ivBattery.setImageResource(R.drawable.ic_battery_10);
-        }else if(level <=20){
+        } else if (level <= 20) {
             ivBattery.setImageResource(R.drawable.ic_battery_20);
-        }else if(level <=40){
+        } else if (level <= 40) {
             ivBattery.setImageResource(R.drawable.ic_battery_40);
-        }else if(level <=60){
+        } else if (level <= 60) {
             ivBattery.setImageResource(R.drawable.ic_battery_60);
-        }else if(level <=80){
+        } else if (level <= 80) {
             ivBattery.setImageResource(R.drawable.ic_battery_80);
-        }else if(level <=100){
+        } else if (level <= 100) {
             ivBattery.setImageResource(R.drawable.ic_battery_100);
-        }else {
+        } else {
             ivBattery.setImageResource(R.drawable.ic_battery_100);
         }
     }
+
     private void playOrPauseVideo() {
         if (vv.isPlaying()) {
             vv.pause();
@@ -482,38 +486,37 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     }
 
 
-
     private void hideOrShowMediaController() {
-        if(isShowMediaController) {
+        if (isShowMediaController) {
             handler.removeMessages(HIDEMEDIACONTROLLER);
             llBottom.setVisibility(View.GONE);
             llTop.setVisibility(View.GONE);
 
             isShowMediaController = false;
-        }else {
+        } else {
             llBottom.setVisibility(View.VISIBLE);
             llTop.setVisibility(View.VISIBLE);
             isShowMediaController = true;
-            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER,5000);
+            handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER, 5000);
         }
     }
 
 
     private void setVideoScreenType() {
-        if(isFullScreen) {
+        if (isFullScreen) {
             setScreenType(DEFAULT_SCREEN);
-            isFullScreen =false;
-        }else {
+            isFullScreen = false;
+        } else {
             setScreenType(FULL_SCREEN);
-            isFullScreen =true;
+            isFullScreen = true;
         }
     }
 
     private void setScreenType(int screenTYpe) {
         switch (screenTYpe) {
-            case  DEFAULT_SCREEN:
+            case DEFAULT_SCREEN:
                 int mVideoWidth = videoWidth;
-                int mVideoHeight= videoHeight;
+                int mVideoHeight = videoHeight;
                 int height = screenHeight;
                 int width = screenWidth;
 
@@ -529,8 +532,8 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                 vv.setVideoSize(width, height);
                 btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_full_selector);
                 break;
-            case  FULL_SCREEN:
-                vv.setVideoSize(screenWidth,screenHeight);
+            case FULL_SCREEN:
+                vv.setVideoSize(screenWidth, screenHeight);
                 btnSwitchScreen.setBackgroundResource(R.drawable.btn_switch_screen_default_selector);
                 break;
         }
@@ -539,13 +542,13 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 
-        if(keyCode == KeyEvent.KEYCODE_VOLUME_DOWN){
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             currentVoice--;
             updataCurrentVoice(currentVoice);
             handler.removeMessages(HIDEMEDIACONTROLLER);
             handler.sendEmptyMessageDelayed(HIDEMEDIACONTROLLER, 5000);
             return true;
-        }else if(keyCode ==KeyEvent.KEYCODE_VOLUME_UP){
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             currentVoice++;
             updataCurrentVoice(currentVoice);
             handler.removeMessages(HIDEMEDIACONTROLLER);
@@ -557,15 +560,14 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     }
 
 
-
     @Override
     protected void onDestroy() {
-        if(handler != null){
+        if (handler != null) {
             handler.removeCallbacksAndMessages(null);
             handler = null;
         }
 
-        if(receiver != null){
+        if (receiver != null) {
             unregisterReceiver(receiver);
             receiver = null;
         }
