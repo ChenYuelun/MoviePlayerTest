@@ -1,7 +1,9 @@
 package com.example.movieplayertest.activity;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -367,7 +369,19 @@ public class VitamioVideoPlayerActivity extends AppCompatActivity implements Vie
         vv.setOnErrorListener(new MediaPlayer.OnErrorListener() {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
-                return false;
+                new AlertDialog.Builder(VitamioVideoPlayerActivity.this)
+                            .setTitle("提示")
+                            .setMessage("当前视频播放错误，请检查网速和文件是否完整")
+                            .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    finish();
+                                }
+                            })
+                            .show();
+
+
+                return true;
             }
         });
 
