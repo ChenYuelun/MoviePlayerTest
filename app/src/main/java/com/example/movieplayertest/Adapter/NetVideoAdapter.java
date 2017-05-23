@@ -74,7 +74,7 @@ public class NetVideoAdapter extends BaseAdapter {
         MovieInfo.TrailersBean bean = datas.get(position);
         viewHolder.tv_name.setText(bean.getMovieName());
         viewHolder.tv_content.setText(bean.getSummary());
-        viewHolder.tv_time.setText(Formatter.formatFileSize(context, bean.getVideoLength() * 1000));
+        viewHolder.tv_time.setText(utils.stringForTime( bean.getVideoLength() * 1000));
 
         x.image().bind(viewHolder.icon, bean.getCoverImg(), options);
 
