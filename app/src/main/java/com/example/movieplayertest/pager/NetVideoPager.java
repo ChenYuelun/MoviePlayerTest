@@ -17,8 +17,12 @@ import com.example.movieplayertest.domain.MediaItem;
 import com.example.movieplayertest.domain.MovieInfo;
 import com.example.movieplayertest.fragment.BaseFragment;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.internal.Primitives;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
@@ -102,28 +106,50 @@ public class NetVideoPager extends BaseFragment {
     private void setData(String json) {
         MovieInfo movieInfo = new Gson().fromJson(json, MovieInfo.class);
         List<MovieInfo.TrailersBean> trailers = movieInfo.getTrailers();
-        mediaItems = new ArrayList<>();
-        for(int i = 0; i < trailers.size(); i++) {
-//            private String name;
-//            private long duration;
-//            private long size;
-//            private String data;
-            MovieInfo.TrailersBean bean = trailers.get(i);
 
-            String name = bean.getMovieName();
-            long duraition = bean.getVideoLength()*1000;
-            long size = 0;
-            String data = bean.getUrl();
-            mediaItems.add(new MediaItem(name,duraition,size,data));
-            Log.e("TAG",data);
-
-        }
         if(trailers!= null && trailers.size()>0) {
             tv_nodata.setVisibility(View.GONE);
             adapter = new NetVideoAdapter(context,trailers);
             lv_net_video.setAdapter(adapter);
         }else {
             tv_nodata.setVisibility(View.VISIBLE);
+        }
+
+        mediaItems = new ArrayList<>();
+//        for(int i = 0; i < trailers.size(); i++) {
+////            private String name;
+////            private long duration;
+////            private long size;
+////            private String data;
+//            MovieInfo.TrailersBean bean = trailers.get(i);
+//
+//            String name = bean.getMovieName();
+//            long duraition = bean.getVideoLength()*1000;
+//            long size = 0;
+//            String data = bean.getUrl();
+//            mediaItems.add(new MediaItem(name,duraition,size,data));
+//            Log.e("TAG",data);
+//
+//        }
+
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            String json2 = jsonObject.getString("trailers");
+            JSONArray array = new JSONArray(json2);
+            for(int i = 0; i < array.length(); i++) {
+                JSONObject jsonObject2 = array.getJSONObject(i);
+                String name = jsonObject2.getString("movieName");
+                long duraition = jsonObject2.getInt("videoLength")*1000;
+                long size = 0;
+                String data = jsonObject2.getString("url");
+                mediaItems.add(new MediaItem(name,duraition,size,data));
+
+            }
+
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
 
 
