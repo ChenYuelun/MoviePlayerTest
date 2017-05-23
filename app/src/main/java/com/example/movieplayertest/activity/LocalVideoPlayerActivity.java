@@ -1,7 +1,9 @@
 package com.example.movieplayertest.activity;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
@@ -154,6 +156,17 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
             }
             // Handle clicks for btnVoice
         } else if (v == btnSwitchPlayer) {
+            new AlertDialog.Builder(this)
+                    .setTitle("切换播放器")
+                    .setMessage("当前为万能播放器，是否切换到普通播放器")
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            startVitamioPlayer();
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
             // Handle clicks for btnSwitchPlayer
         } else if (v == btnExit) {
             finish();
