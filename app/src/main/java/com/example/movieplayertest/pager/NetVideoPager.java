@@ -2,6 +2,7 @@ package com.example.movieplayertest.pager;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -11,16 +12,21 @@ import android.widget.TextView;
 import com.example.movieplayertest.Adapter.NetVideoAdapter;
 import com.example.movieplayertest.R;
 import com.example.movieplayertest.activity.LocalVideoPlayerActivity;
+import com.example.movieplayertest.activity.VitamioVideoPlayerActivity;
+import com.example.movieplayertest.domain.MediaItem;
 import com.example.movieplayertest.domain.MovieInfo;
 import com.example.movieplayertest.fragment.BaseFragment;
 import com.google.gson.Gson;
+import com.google.gson.internal.Primitives;
 
 import org.xutils.common.Callback;
 import org.xutils.http.RequestParams;
 import org.xutils.x;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import static android.media.CamcorderProfile.get;
 import static com.example.movieplayertest.R.id.lv_local_video;
 
 
@@ -32,6 +38,7 @@ public class NetVideoPager extends BaseFragment {
     private ListView lv_net_video;
     private TextView tv_nodata;
     private NetVideoAdapter adapter;
+    private ArrayList<MediaItem> mediaItems;
     @Override
     public View initView() {
         View view = View.inflate(context, R.layout.net_video_item, null);
@@ -41,9 +48,16 @@ public class NetVideoPager extends BaseFragment {
         lv_net_video.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(context, LocalVideoPlayerActivity.class);
-                intent.setDataAndType(Uri.parse(adapter.getItem(position).getUrl()),"video/*");
+
+                Intent intent = new Intent(context,LocalVideoPlayerActivity.class);
+                if(mediaItems != null && mediaItems.size()>0) {
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("videoList",mediaItems);
+                    intent.putExtra("position",position);
+                    intent.putExtras(bundle);
+                }
                 startActivity(intent);
+
             }
         });
 
@@ -88,6 +102,22 @@ public class NetVideoPager extends BaseFragment {
     private void setData(String json) {
         MovieInfo movieInfo = new Gson().fromJson(json, MovieInfo.class);
         List<MovieInfo.TrailersBean> trailers = movieInfo.getTrailers();
+        mediaItems = new ArrayList<>();
+        for(int i = 0; i < trailers.size(); i++) {
+//            private String name;
+//            private long duration;
+//            private long size;
+//            private String data;
+            MovieInfo.TrailersBean bean = trailers.get(i);
+
+            String name = bean.getMovieName();
+            long duraition = bean.getVideoLength()*1000;
+            long size = 0;
+            String data = bean.getUrl();
+            mediaItems.add(new MediaItem(name,duraition,size,data));
+            Log.e("TAG",data);
+
+        }
         if(trailers!= null && trailers.size()>0) {
             tv_nodata.setVisibility(View.GONE);
             adapter = new NetVideoAdapter(context,trailers);
@@ -95,6 +125,8 @@ public class NetVideoPager extends BaseFragment {
         }else {
             tv_nodata.setVisibility(View.VISIBLE);
         }
+
+
     }
 
 

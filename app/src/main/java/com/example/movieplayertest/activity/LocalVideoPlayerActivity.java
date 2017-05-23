@@ -261,7 +261,6 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
     private void setDatas() {
         if (mediaItems != null && mediaItems.size() > 0) {
-
             MediaItem mediaItem = mediaItems.get(position);
             isNetUri = utils.isNetUri(mediaItem.getData());
             tvName.setText(mediaItem.getName());
