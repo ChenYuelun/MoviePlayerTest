@@ -180,6 +180,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
 
     }
 
+    private int preCrruentPosition;
 
     private Handler handler = new Handler() {
         @Override
@@ -195,6 +196,15 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                         seekbarVideo.setSecondaryProgress(sencondProgress);
                     }else {
                         seekbarVideo.setSecondaryProgress(0);
+                    }
+                    
+                    if(isNetUri && vv.isPlaying()) {
+                        if(currentPosition - preCrruentPosition < 500) {
+                            ll_buffering.setVisibility(View.VISIBLE);
+                        }else {
+                            ll_buffering.setVisibility(View.GONE);
+                        }
+                        preCrruentPosition = currentPosition;
                     }
                     
                     
@@ -392,24 +402,24 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         });
 
         //监听卡
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            vv.setOnInfoListener(new MediaPlayer.OnInfoListener() {
-                @Override
-                public boolean onInfo(MediaPlayer mp, int what, int extra) {
-                    switch (what) {
-                        case MediaPlayer.MEDIA_INFO_BUFFERING_START :
-                            ll_buffering.setVisibility(View.VISIBLE);
-
-                            break;
-                        case MediaPlayer.MEDIA_INFO_BUFFERING_END :
-                            ll_buffering.setVisibility(View.GONE);
-
-                            break;
-                    }
-                    return true;
-                }
-            });
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+//            vv.setOnInfoListener(new MediaPlayer.OnInfoListener() {
+//                @Override
+//                public boolean onInfo(MediaPlayer mp, int what, int extra) {
+//                    switch (what) {
+//                        case MediaPlayer.MEDIA_INFO_BUFFERING_START :
+//                            ll_buffering.setVisibility(View.VISIBLE);
+//
+//                            break;
+//                        case MediaPlayer.MEDIA_INFO_BUFFERING_END :
+//                            ll_buffering.setVisibility(View.GONE);
+//
+//                            break;
+//                    }
+//                    return true;
+//                }
+//            });
+//        }
     }
 
     private void updataCurrentVoice(int progress) {
