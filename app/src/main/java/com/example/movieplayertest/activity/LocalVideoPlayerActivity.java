@@ -81,6 +81,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
     private boolean isMute = false;
     private AudioManager am;
     private Uri uri;
+    private boolean isNetUri;
 
 
     /**
@@ -182,6 +183,16 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
                     int currentPosition = vv.getCurrentPosition();
                     seekbarVideo.setProgress(currentPosition);
                     tvCurrentTime.setText(utils.stringForTime(currentPosition));
+                    if(isNetUri) {
+                        int bufferPercentage = vv.getBufferPercentage();
+                        int sencondProgress = bufferPercentage / 100 * seekbarVideo.getMax();
+                        seekbarVideo.setSecondaryProgress(sencondProgress);
+                    }else {
+                        seekbarVideo.setSecondaryProgress(0);
+                    }
+                    
+                    
+                    
                     sendEmptyMessageDelayed(PROGRESS, 1000);
 
                     break;
@@ -205,10 +216,12 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         if (mediaItems != null && mediaItems.size() > 0) {
 
             MediaItem mediaItem = mediaItems.get(position);
+            isNetUri = utils.isNetUri(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             vv.setVideoPath(mediaItem.getData());
             handler.sendEmptyMessage(NEWTIME);
         }else if(uri != null) {
+            isNetUri = utils.isNetUri(uri.toString());
             vv.setVideoURI(uri);
         }
     }
@@ -392,6 +405,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         position++;
         if (position < mediaItems.size()) {
             MediaItem mediaItem = mediaItems.get(position);
+            isNetUri = utils.isNetUri(mediaItem.getData());
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             setButtonStatus();
@@ -405,6 +419,7 @@ public class LocalVideoPlayerActivity extends AppCompatActivity implements View.
         position--;
         if (position >= 0) {
             MediaItem mediaItem = mediaItems.get(position);
+            isNetUri = utils.isNetUri(mediaItem.getData());
             vv.setVideoPath(mediaItem.getData());
             tvName.setText(mediaItem.getName());
             setButtonStatus();
